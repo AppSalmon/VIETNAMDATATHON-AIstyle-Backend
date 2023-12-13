@@ -1,6 +1,5 @@
 from AIstyle import db
 from sqlalchemy import func,DateTime,ForeignKey
-from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
 
 

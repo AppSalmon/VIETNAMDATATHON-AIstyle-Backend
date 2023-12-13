@@ -30,9 +30,11 @@ def create_app():
     app = Flask(__name__)
     app.config["SECRET_KEY"] = SECRET_KEY
     # app.config["SQLALCHEMY_DATABASE_URI"] = f'postgresql+psycopg2://{user_postgreSQL}:{password_postgreSQL}@localhost/{DB_NAME}'
+    # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:211551@localhost/productdb'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    # db.init_app(app)
-    # create_database(app)
+    db.init_app(app)
+    create_database(app)
 
     from AIstyle.user import user
     from AIstyle.home import home
@@ -44,3 +46,4 @@ def create_app():
 
     return app
 
+from AIstyle.models import *
