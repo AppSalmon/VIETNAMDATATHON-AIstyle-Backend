@@ -20,6 +20,7 @@ def create_database(app):
     Chưa comment
     '''
     with app.app_context():
+        db.drop_all()
         db.create_all()
     print("=> Created BD!")
 
@@ -30,24 +31,14 @@ def create_app():
     app = Flask(__name__)
     app.config["SECRET_KEY"] = SECRET_KEY
     # app.config["SQLALCHEMY_DATABASE_URI"] = f'postgresql+psycopg2://{user_postgreSQL}:{password_postgreSQL}@localhost/{DB_NAME}'
-    app.config["SQLALCHEMY_DATABASE_URI"] = f'postgresql+psycopg2://{user_postgreSQL}:{password_postgreSQL}@localhost/test_db'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:211551@localhost/productdb'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     db.init_app(app)
     create_database(app)
 
     from AIstyle.user import user
     from AIstyle.home import home
-    from AIstyle.models import Category, Product
-
-    c1 = Category(name = "Dien thoai")
-    c2 = Category(name = "Laptop")
-    c3 = Category(name = "Haha")
-
-    db.session.add(c1)
-    db.session.add(c2)
-    db.session.add(c3)
-    db.session.commit()
-
 
 
     app.register_blueprint(user)
@@ -55,3 +46,7 @@ def create_app():
 
 
     return app
+
+from AIstyle.models import *
+from AIstyle.home import *
+from AIstyle.user import *
