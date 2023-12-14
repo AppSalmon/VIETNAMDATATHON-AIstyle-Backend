@@ -7,8 +7,8 @@ class Brand(db.Model):
     __tablename__ = 'brand'
     id = db.Column(db.Integer, primary_key=True,autoincrement=True)
     Name = db.Column(db.String(200),nullable=False)
-    Description = db.Column(db.String(200))
-    Product = relationship('product',backref='brand',lazy=True)
+    Description = db.Column(db.String(1000))
+    Product = relationship('Product',backref='Brand', lazy=True)
 
     def __init__(self,name,description):
         self.Name = name
@@ -22,9 +22,9 @@ class Product(db.Model):
     OriginalPrice = db.Column(db.Float,nullable=False)
     ScrapedAt = db.Column(DateTime,nullable=False)
     BrandId = db.Column(db.Integer,ForeignKey(Brand.id), nullable=False)
-    ProductDetail = relationship('product_detail',backref='product',lazy=True)
-    Order = relationship('order',backref='product', lazy=True)
-    ResultBox = relationship('result_box',backref='product', lazy=True)
+    ProductDetail = relationship('ProductDetail', backref='Product',lazy=True)
+    Order = relationship('Order',backref='Product', lazy=True)
+    ResultBox = relationship('ResultBox', backref='Product', lazy=True)
 
     def __init__(self,name,original_price,scraped_at,brand_id):
         self.Name = name
@@ -32,35 +32,45 @@ class Product(db.Model):
         self.ScrapedAt = scraped_at
         self.BrandId = brand_id
 
+
 class ProductDetail(db.Model):
     __tablename__ = 'product_detail'
     id = db.Column(db.Integer, primary_key=True,autoincrement=True)
-    Description = db.Column(db.String(200),nullable=False)
+    Description = db.Column(db.String(2000),nullable=False)
     Price = db.Column(db.Float, nullable=False)
     ScrapedAt = db.Column(DateTime, nullable=False)
     Color = db.Column(db.String(100))
     Availability = db.Column(db.String(100))
-    LinkImage = db.Column(db.String(200), nullable=False)
     AvgRating = db.Column(db.Float)
     ReviewCount = db.Column(db.Integer)
-    ProductUrl = db.Column(db.String(200),nullable=False)
+    ProductUrl = db.Column(db.String(1000),nullable=False)
     Sale = db.Column(db.String(100))
     ProductId = db.Column(db.Integer,ForeignKey(Product.id),nullable=False)
+    Image = relationship('ImageLink', backref='ProductDetail', lazy=True)
 
     def __init__(self,description,price,scraped_at,color,
-                 availability,link_image,avg_rating,
+                 availability,avg_rating,
                  review_count,product_url,sale,product_id): 
         self.Description = description
         self.Price = price
         self.ScrapedAt = scraped_at
         self.Color = color
         self.Availability = availability
-        self.LinkImage = link_image
         self.AvgRating = avg_rating
         self.ReviewCount = review_count
         self.ProductUrl = product_url
         self.Sale = sale
         self.ProductId = product_id
+
+class ImageLink(db.Model):
+    __tablename__ = 'image_link'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    Image = db.Column(db.String(1000), nullable=False)
+    ProductDetailId = db.Column(db.Integer, db.ForeignKey(ProductDetail.id), nullable=False)
+
+    def __init__(self,image,product_detail_id):
+        self.Image = image
+        self.ProductDetailId = product_detail_id
 
 class User(db.Model):
     __tablename__ = 'user'
@@ -68,8 +78,8 @@ class User(db.Model):
     UserName = db.Column(db.String(200),nullable=False)
     Role = db.Column(db.String(200))
     CreatedAt = db.Column(DateTime,nullable=False)
-    HashPassword = db.Column(db.String(200),nullable=False)
-    Order = relationship('order',backref='user',lazy=True)
+    HashPassword = db.Column(db.String(1000),nullable=False)
+    Order = relationship('Order',backref='User',lazy=True)
 
     def __init__(self,name,created,hash_password,role=None):
         self.HashPassword = hash_password
@@ -100,17 +110,17 @@ class Chat(db.Model):
     __tablename__ = 'chat'
     id = db.Column(db.Integer, primary_key=True,autoincrement=True)
     Name = db.Column(db.String(200))
-    Box = relationship('chat_box',backref='chat',lazy=True)
+    Box = relationship('ChatBox',backref='Chat',lazy=True)
     def __init__(self,name):
         self.Name = name
 
 class ChatBox(db.Model):
     __tablename__ = 'chat_box'
     id = db.Column(db.Integer, primary_key=True,autoincrement=True)
-    TextQuestion = db.Column(db.String(200),nullable=False)
-    LinkImageQuestion = db.Column(db.String(200),nullable=False)
+    TextQuestion = db.Column(db.String(3000),nullable=False)
+    LinkImageQuestion = db.Column(db.String(3000),nullable=False)
     ChatId = db.Column(db.Integer,ForeignKey(Chat.id),nullable=False)
-    ResultBox = relationship('result_chat',backref='chat_box',lazy=True)
+    ResultBox = relationship('ResultBox',backref='ChatBox',lazy=True)
 
     def __init__(self,text,image,chat_id):
         self.ChatId = chat_id
@@ -120,8 +130,8 @@ class ChatBox(db.Model):
 class ResultBox(db.Model):
     __tablename__ = 'result_box'
     id = db.Column(db.Integer, primary_key=True,autoincrement=True)
-    TextAnswer = db.Column(db.String(200), nullable=False)
-    LinkImageAnswer = db.Column(db.String(200), nullable=False)
+    TextAnswer = db.Column(db.String(3000), nullable=False)
+    LinkImageAnswer = db.Column(db.String(3000), nullable=False)
     BoxId = db.Column(db.Integer,ForeignKey(ChatBox.id),nullable=False)
     ProductId = db.Column(db.Integer,ForeignKey(Product.id),nullable=False)
 
@@ -130,11 +140,3 @@ class ResultBox(db.Model):
         self.LinkImageAnswer = link_image_answer
         self.BoxId = box_id
         self.ProductId = product_id
-
-
-
-
-
-
-
-
