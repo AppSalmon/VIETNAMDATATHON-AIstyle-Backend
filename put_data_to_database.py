@@ -33,9 +33,10 @@ password_postgreSQL = os.environ.get("password_postgreSQL")
 
 app = create_app(remove=True)
 
-
+''' Import data '''
 import pandas as pd
 df_crawl = pd.read_csv("VIETNAMDATATHON-AIstyle-Backend\Process_data\data_crawl.csv")
+df_btc = pd.read_csv("VIETNAMDATATHON-AIstyle-Backend\Process_data\data_btc.csv")
 
 
 ''' Add data brand to database '''
@@ -93,7 +94,7 @@ for index, row in df_crawl.iterrows():
 print(productId)
 productId2 = 0
 
-df_btc = pd.read_csv("VIETNAMDATATHON-AIstyle-Backend\Process_data\data_btc.csv")
+
 
 for index, row in df_btc.iterrows():
     productId2 = productId + index + 1
