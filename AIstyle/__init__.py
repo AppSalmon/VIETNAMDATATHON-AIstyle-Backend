@@ -15,27 +15,28 @@ password_postgreSQL = os.environ.get("password_postgreSQL")
 
 # print(SECRET_KEY, DB_NAME, user_postgreSQL, password_postgreSQL)
 
-def create_database(app):
+def create_database(app, remove):
     '''
     Chưa comment
     '''
     with app.app_context():
-        db.drop_all()
+        if remove == True:
+            db.drop_all()
         db.create_all()
     print("=> Created BD!")
 
-def create_app():
+def create_app(remove = False):
     '''
     Chưa comment
     '''
     app = Flask(__name__)
     app.config["SECRET_KEY"] = SECRET_KEY
-    # app.config["SQLALCHEMY_DATABASE_URI"] = f'postgresql+psycopg2://{user_postgreSQL}:{password_postgreSQL}@localhost/{DB_NAME}'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:211551@localhost/productdb'
+    app.config["SQLALCHEMY_DATABASE_URI"] = f'postgresql+psycopg2://{user_postgreSQL}:{password_postgreSQL}@localhost/{DB_NAME}'
+    # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:211551@localhost/productdb'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     db.init_app(app)
-    create_database(app)
+    create_database(app, remove)
 
     from AIstyle.user import user
     from AIstyle.home import home
