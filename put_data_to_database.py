@@ -35,8 +35,8 @@ app = create_app(remove=True)
 
 ''' Import data '''
 import pandas as pd
-df_crawl = pd.read_csv("VIETNAMDATATHON-AIstyle-Backend\Process_data\data_crawl.csv")
-df_btc = pd.read_csv("VIETNAMDATATHON-AIstyle-Backend\Process_data\data_btc.csv")
+df_crawl = pd.read_csv("Process_data/data_crawl.csv")
+df_btc = pd.read_csv("Process_data/data_btc.csv")
 
 
 ''' Add data brand to database '''
