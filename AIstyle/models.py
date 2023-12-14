@@ -41,27 +41,36 @@ class ProductDetail(db.Model):
     ScrapedAt = db.Column(DateTime, nullable=False)
     Color = db.Column(db.String(100))
     Availability = db.Column(db.String(100))
-    LinkImage = db.Column(db.String(1000), nullable=False)
     AvgRating = db.Column(db.Float)
     ReviewCount = db.Column(db.Integer)
     ProductUrl = db.Column(db.String(1000),nullable=False)
     Sale = db.Column(db.String(100))
     ProductId = db.Column(db.Integer,ForeignKey(Product.id),nullable=False)
+    Image = relationship('ImageLink', backref='ProductDetail', lazy=True)
 
     def __init__(self,description,price,scraped_at,color,
-                 availability,link_image,avg_rating,
+                 availability,avg_rating,
                  review_count,product_url,sale,product_id): 
         self.Description = description
         self.Price = price
         self.ScrapedAt = scraped_at
         self.Color = color
         self.Availability = availability
-        self.LinkImage = link_image
         self.AvgRating = avg_rating
         self.ReviewCount = review_count
         self.ProductUrl = product_url
         self.Sale = sale
         self.ProductId = product_id
+
+class ImageLink(db.Model):
+    __tablename__ = 'image_link'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    Image = db.Column(db.String(1000), nullable=False)
+    ProductDetailId = db.Column(db.Integer, db.ForeignKey(ProductDetail.id), nullable=False)
+
+    def __init__(self,image,product_detail_id):
+        self.Image = image
+        self.ProductDetailId = product_detail_id
 
 class User(db.Model):
     __tablename__ = 'user'
@@ -131,4 +140,3 @@ class ResultBox(db.Model):
         self.LinkImageAnswer = link_image_answer
         self.BoxId = box_id
         self.ProductId = product_id
-

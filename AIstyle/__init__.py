@@ -15,7 +15,7 @@ password_postgreSQL = os.environ.get("password_postgreSQL")
 
 # print(SECRET_KEY, DB_NAME, user_postgreSQL, password_postgreSQL)
 
-def create_database(app, remove):
+def create_database(app,remove):
     '''
     Chưa comment
     '''
@@ -36,7 +36,7 @@ def create_app(remove = False):
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     db.init_app(app)
-    create_database(app, remove)
+    create_database(app,remove)
 
     from AIstyle.user import user
     from AIstyle.home import home
