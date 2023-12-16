@@ -25,6 +25,8 @@ class Product(db.Model):
     ProductDetail = relationship('ProductDetail', backref='Product',lazy=True)
     Order = relationship('Order',backref='Product', lazy=True)
     ResultBox = relationship('ResultBox', backref='Product', lazy=True)
+    Cart = relationship('Cart', backref='Product', lazy=True)
+    TopTrending = relationship('TopTrending', backref='Product', lazy=True)
 
     def __init__(self,name,original_price,scraped_at,brand_id):
         self.Name = name
@@ -75,11 +77,13 @@ class ImageLink(db.Model):
 class User(db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True,autoincrement=True)
-    UserName = db.Column(db.String(200),nullable=False)
-    Role = db.Column(db.String(200))
+    UserName = db.Column(db.String(500),nullable=False)
+    Gmail = db.Column(db.String(500),nullable=False)
+    Role = db.Column(db.String(500))
     CreatedAt = db.Column(DateTime,nullable=False)
     HashPassword = db.Column(db.String(1000),nullable=False)
     Order = relationship('Order',backref='User',lazy=True)
+    Cart = relationship('Cart',backref='User',lazy=True)
 
     def __init__(self,name,created,hash_password,role=None):
         self.HashPassword = hash_password
@@ -140,3 +144,26 @@ class ResultBox(db.Model):
         self.LinkImageAnswer = link_image_answer
         self.BoxId = box_id
         self.ProductId = product_id
+
+class TopTrending(db.Model):
+    __tablename__ = 'top_tranding'
+    id = db.Column(db.Integer, primary_key=True,autoincrement=True)
+    ProductID = db.Column(db.Integer,ForeignKey(Product.id),nullable=False)
+    
+    def __init__(self,id):
+        self.ProductID = id
+
+class Cart(db.Model):
+    __tablename__ = 'cart'
+    id = db.Column(db.Integer, primary_key=True,autoincrement=True)
+    UserId = db.Column(db.Integer,ForeignKey(User.id),nullable=False)
+    ProductID = db.Column(db.Integer,ForeignKey(Product.id),nullable=False)
+
+    def __init__(self,proid,user_id):
+        self.ProductID = proid
+        self.UserId = user_id
+
+    
+    
+
+
