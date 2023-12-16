@@ -1,4 +1,4 @@
-from AIstyle import *
+from app import *
 
 app = create_app()
 
