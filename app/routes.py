@@ -9,6 +9,7 @@ from datetime import datetime
 import threading
 import re
 from sqlalchemy.orm import joinedload
+from sqlalchemy import desc, asc
 # from app.utils import make_response, make_data
 
 routes = Blueprint("routes", __name__)
@@ -16,109 +17,103 @@ routes = Blueprint("routes", __name__)
 @routes.route("/chart/<int:product_id>", methods=["GET"])
 @cross_origin()
 def get_price(product_id: int):
-    list_sale_price =  list(map(lambda x: x.Price ,ProductDetail.query.filter_by(ProductId = product_id).all()))
-    list_sale_price = list_sale_price[0].split("~")
-    list_sale_price = [float(num) for num in list_sale_price]
-    product =  Product.query.filter_by(id = product_id).first()
-    name = product.Name
-    original_price = product.OriginalPrice
-    get_price = {"ProductId": product_id,
-                 'Name': name,
-                 'OriginalPrice': original_price,
-                 'Price': list_sale_price
-        }
+    productdetail = ProductDetail.query.filter_by(ProductId = product_id).all()
+    mock_prices = list(map(lambda x: x.MockPrice,productdetail))[-1]
+    price =   list(map(lambda x: x.Price,productdetail))[-1]
+    numbers = mock_prices.split("~")
+    # Convert extracted strings to float
+    numbers_float = [float(num) for num in numbers]
+    numbers_float.append(price)
+    get_price = {
+        'ProductId': product_id,
+        'Price': numbers_float
+    }
     return jsonify(get_price)
+
 #Trả về list sp đang sale của một product 
 @routes.route("/recommend", methods=["GET"])
 @cross_origin()
 def recommend():
-    product = Product.query.all()
-    name = list(map(lambda x: x.Name, product))
-    original_price = list(map(lambda x: x.OriginalPrice, product))
-    productId = list(map(lambda x: x.id, product))
-    list_product = []
-    for i in range(len(productId)):
-        detail = ProductDetail.query.filter_by(ProductId = productId[i]).all()
-        detail_id = list(map(lambda x: x.id, detail))
-        list_sale_price = list(map(lambda x: x.Price,detail))
-        at = list(map(lambda x: x.ScrapedAt,detail))
-        index = min(range(len(at)), key=lambda i: abs(datetime.now() - at[i]))
-        list_sale_price = list_sale_price[index]
-        numbers = list_sale_price.split("~")
-        # Convert extracted strings to float
-        numbers_float = [float(num) for num in numbers]
-        price = numbers_float[-1]
-        list_image = []
-        for j in range(len(detail_id)):
-            images = list(map(lambda x: x.Image, ImageLink.query.filter_by(ProductDetailId=detail_id[j])))
-            list_image.append(images)
-        list_product.append({'id':i,
-                                'name':name[i],
-                                'original_price':original_price[i],
-                                "price":price,
-                                'sale': (1 - price/original_price[i])* 100,
-                                'list_image': list_image})
-    get_trending = {'Product': list_product}
-    list_product_sort = sorted(get_trending['Product'], key=lambda x: x['sale'], reverse=True)[:50]
-    for i in range(len(list_product_sort)):
-        list_product_sort[i]['key'] = i
-    get_trending = {'Product': list_product_sort}
-    return jsonify(get_trending)
     
+    results = db.session.query(Product, ProductDetail)\
+            .join(ProductDetail, Product.id == ProductDetail.ProductId)\
+            .order_by(desc(Product.OriginalPrice), asc(ProductDetail.Price))\
+            .limit(6)\
+            .all()
+    
+    list_product = []
+    for product, product_detail in results:
+        product_id = product.id
+        name = product.Name
+        original_price = product.OriginalPrice
+        product_detail_price = product_detail.Price
+        detail_id = product_detail.id  # Giả sử detail_id là id của ProductDetail
+        sale = (1 - product_detail_price/original_price)* 100
 
+        # Truy vấn ImageLink dựa trên ProductDetailId
+        list_image = ImageLink.query.filter_by(ProductDetailId=detail_id).all()
+        
+        list_product.append(
+            {
+                "product_id": product_id,
+                "name": name,
+                "original_price": original_price,
+                "product_detail_price": product_detail_price,
+                'sale': sale,
+                "list_image": [image_link.Image for image_link in list_image]  # Thay thế 'some_attribute' bằng tên thuộc tính thực tế của ImageLink bạn muốn trả về
+            })
+
+    get_product = {
+        'Product': list_product
+    }
+    return jsonify(get_product)
 
     
 #Trả về list sp top trending: /trending
 @routes.route("/trending",methods=["GET"])
 @cross_origin()
 def trending():
-    product = Product.query.all()
-    product_id =  list(map(lambda x: x.id, product))
-    name = list(map(lambda x: x.Name, product))
-    list_product = []
-    for i in range(len(product_id)):
-        detail = ProductDetail.query.filter_by(ProductId = product_id[i]).all()
-        detail_id = list(map(lambda x: x.id, detail))
-        rating = list(map(lambda x: x.AvgRating,detail))
-        reviewCount = list(map(lambda x: x.ReviewCount,detail))
-        list_sale_price = list(map(lambda x: x.Price,detail))
-        at = list(map(lambda x: x.ScrapedAt,detail))
-        index = min(range(len(at)), key=lambda i: abs(datetime.now() - at[i]))
-        rating = rating[index]
-        reviewCount = reviewCount[index]
-        list_sale_price = list_sale_price[index]
-        numbers = list_sale_price.split("~")
-        # Convert extracted strings to float
-        numbers_float = [float(num) for num in numbers]
-        price = numbers_float[-1]
-        list_image = []
-        for j in range(len(detail_id)):
-            images = list(map(lambda x: x.Image, ImageLink.query.filter_by(ProductDetailId=detail_id[j])))
-            list_image.append(images)
-        list_product.append({'id': i,
-                             'name': name[i],
-                             'rating': rating,
-                             'review_count': reviewCount,
-                             'price': price,
-                             'list_image': list_image})
-    
-    get_trending = {'Product': list_product}
-    list_product_sort = sorted(get_trending['Product'], key=lambda x: (x['rating'], x['review_count']), reverse=True)
-    for i in range(len(list_product_sort)):
-        list_product_sort[i]['key'] = i
-    get_trending = {'Product': list_product_sort}
-    return jsonify(get_trending)
+    results = db.session.query(ProductDetail)\
+            .order_by(desc(ProductDetail.AvgRating), desc(ProductDetail.ReviewCount))\
+            .limit(6)\
+            .all()
+
+    list_product_details = []
+    for product_detail in results:
+        product = Product.query.filter_by(id = product_detail.ProductId).all()
+        product = product[0]
+        name = product.Name
+        origin_price = product.OriginalPrice
+        product_id = product.id
+        name = product.Name
+        detailId = product_detail.id
+        list_image = ImageLink.query.filter_by(ProductDetailId=detailId).all()
+
+        list_product_details.append({
+            "ProductId": product_id,
+            "Price": product_detail.Price,
+            "AvgRating": product_detail.AvgRating,
+            "ReviewCount": product_detail.ReviewCount,
+            'OriginalPrice': origin_price,
+            'name': name,
+            'image': [image_link.Image for image_link in list_image]
+            # Thêm các thông tin khác từ product_detail mà bạn muốn lấy
+        })
+    get_product = {
+        'Products': list_product_details
+    }
+    return jsonify(get_product)
 
 
-#return same products: /same-products
-@routes.route("/same-products/<product_id>", methods=["GET"])
+# #return same products: /same-products
+# @routes.route("/same-products/<product_id>", methods=["GET"])
+# @cross_origin()
+# def same_product(product_id):
+#     pass
+
+@routes.route("/info/<int:product_id>",methods = ["GET"])
 @cross_origin()
-def same_product(product_id):
-    pass
-
-@routes.route("/info/<product_id>",methods = ["GET"])
-@cross_origin()
-def info(product_id):
+def info(product_id:int):
     try:
         t1 = threading.Thread(target=get_price(product_id))
         t2 = threading.Thread(target=recommend)
@@ -162,39 +157,37 @@ def info(product_id):
 @routes.route('/product/<int:product_id>', methods = ['GET'])
 @cross_origin()
 def getproduct(product_id: int):
-    try:
-        product = Product.query.filter_by(id = product_id).all()
-        product = product[-1]
-        name = product.Name
-        ori_price = product.OriginalPrice
-        detail = ProductDetail.query.filter_by(ProductId = product_id).all()
-        description = list(map(lambda x: x.Description,detail))
-        color = list(map(lambda x: x.Color,detail))
-        avgRating = list(map(lambda x: x.AvgRating,detail))
-        reviewCount = list(map(lambda x: x.ReviewCount,detail))
-        price = list(map(lambda x: x.Price,detail))
-        numbers = price[-1].split("~")
-        numbers_float = [float(num) for num in numbers]
-        detail_id = list(map(lambda x: x.id, detail))
-        list_image = []
-        for j in range(len(detail_id)):
-            images = list(map(lambda x: x.Image, ImageLink.query.filter_by(ProductDetailId=detail_id[j])))
-            list_image.append(images)
-        get_product = {
-            "ProductId": product_id,
-            'Name': name,
-            'OriginalPrice': ori_price,
-            'Price': numbers_float,
-            'reviewCount': reviewCount,
-            'color': color,
-            'description': description,
-            'avgRating': avgRating,
-            'reviewCount': reviewCount,
-            'image': list_image
-        }
-        return jsonify(get_product)
-    except:
-        return 'Fail'
+    
+    product = Product.query.filter_by(id = product_id).one()
+    name = product.Name
+    ori_price = product.OriginalPrice
+    productdetail = ProductDetail.query.filter_by(ProductId = product_id).all()
+    productdetail = productdetail[-1]
+    description = productdetail.Description
+    color = productdetail.Color
+    avgRating = productdetail.AvgRating
+    reviewCount = productdetail.ReviewCount
+    mock_prices = productdetail.MockPrice
+    price =   productdetail.Price
+    numbers = mock_prices.split("~")
+    numbers_float = [float(num) for num in numbers]
+    numbers_float.append(price)
+    productdetail_id = productdetail.id
+    list_image = ImageLink.query.filter_by(ProductDetailId=productdetail_id).all()
+    get_product = {
+        "ProductId": product_id,
+        'Name': name,
+        'OriginalPrice': ori_price,
+        'Price': numbers_float,
+        'ReviewCount': reviewCount,
+        'Color': color,
+        'Description': description,
+        'AvgRating': avgRating,
+        'ReviewCount': reviewCount,
+        'Image': [image_link.Image for image_link in list_image]
+    }
+    return jsonify(get_product)
+    
 
 
 @routes.route("/virtualtryon",methods = ["GET"])

@@ -63,12 +63,11 @@ for index, row in df_crawl.iterrows():
         with app.app_context():
             db.session.add(new_product)
             db.session.commit()
-
-        price_mock = row['mock_prices'][:-1] + '~' + str(row['price']) 
         product_detail = ProductDetail(
             description= row['description'],
             avg_rating= row['avg_rating'],
-            price= price_mock,
+            price= row['price'],
+            mock_prices= row['mock_prices'],
             scraped_at= row['scraped_at'],
             color= row['color'],
             availability= row['availability'],
@@ -80,7 +79,6 @@ for index, row in df_crawl.iterrows():
         with app.app_context():
             db.session.add(product_detail)
             db.session.commit()
-
         link = row['images'][2:-2]
         image = ImageLink(
             image= link,
@@ -100,11 +98,11 @@ for index, row in df_crawl.iterrows():
             db.session.add(new_product)
             db.session.commit()
 
-        price_mock = row['mock_prices'][:-1] + '~' + str(row['price']) 
         product_detail = ProductDetail(
             description= row['description'],
             avg_rating= row['avg_rating'],
-            price= price_mock,
+            price= row['price'],
+            mock_prices= row['mock_prices'],
             scraped_at= row['scraped_at'],
             color= row['color'],
             availability= row['availability'],
@@ -126,62 +124,63 @@ for index, row in df_crawl.iterrows():
             with app.app_context():
                 db.session.add(image)
                 db.session.commit()
-    
+
+
 
         
 print(productId)
-productId2 = 0
+# productId2 = 0
 
-for index, row in df_btc.iterrows():
-    productId2 = productId + index + 1
+# for index, row in df_btc.iterrows():
+#     productId2 = productId + index + 1
 
-    if row['brand'] != 'adidas':
-        new_product = Product(
-            name= row['name'],
-            original_price= row['price'],
-            scraped_at= row['scraped_at'],
-            brand_id= 1
-        )
+#     if row['brand'] != 'adidas':
+#         new_product = Product(
+#             name= row['name'],
+#             original_price= row['price'],
+#             scraped_at= row['scraped_at'],
+#             brand_id= 1
+#         )
     
-    else:
-        new_product = Product(
-            name= row['name'],
-            original_price= row['price'],
-            scraped_at= row['scraped_at'],
-            brand_id= 2
-        )
-    with app.app_context():
-        db.session.add(new_product)
-        db.session.commit()
+#     else:
+#         new_product = Product(
+#             name= row['name'],
+#             original_price= row['price'],
+#             scraped_at= row['scraped_at'],
+#             brand_id= 2
+#         )
+#     with app.app_context():
+#         db.session.add(new_product)
+#         db.session.commit()
     
 
-    product_detail = ProductDetail(
-        description= row['description'],
-        avg_rating= row['avg_rating'],
-        price= row['price'],
-        scraped_at= row['scraped_at'],
-        color= row['color'],
-        availability= row['availability'],
-        review_count= row['review_count'],
-        product_url= row['url'],
-        sale= 0,
-        product_id= productId2
-    )
+#     product_detail = ProductDetail(
+#         description= row['description'],
+#         avg_rating= row['avg_rating'],
+#         price= row['price'],
+#         scraped_at= row['scraped_at'],
+#         color= row['color'],
+#         availability= row['availability'],
+#         review_count= row['review_count'],
+#         product_url= row['url'],
+#         sale= 0,
+#         product_id= productId2
+#     )
 
-    with app.app_context():
-        db.session.add(product_detail)
-        db.session.commit()
+#     with app.app_context():
+#         db.session.add(product_detail)
+#         db.session.commit()
 
-    links = row['images'].split("~")
-    for i in range(len(links)):
-        if i == 4:
-            break
-        image = ImageLink(
-            image= link,
-            product_detail_id= productId2
-        )
-        with app.app_context():
-            db.session.add(image)
-            db.session.commit()
+#     links = row['images'].split("~")
+#     for i in range(len(links)):
+#         if i == 4:
+#             break
+#         image = ImageLink(
+#             image= link,
+#             product_detail_id= productId2
+#         )
+#         with app.app_context():
+#             db.session.add(image)
+#             db.session.commit()
 
-print(productId2)
+# print(productId2)

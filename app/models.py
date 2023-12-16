@@ -37,7 +37,8 @@ class ProductDetail(db.Model):
     __tablename__ = 'product_detail'
     id = db.Column(db.Integer, primary_key=True,autoincrement=True)
     Description = db.Column(db.String(2000),nullable=False)
-    Price = db.Column(db.String(1000), nullable=False)
+    Price = db.Column(db.Float,nullable=False)
+    MockPrice = db.Column(db.String(1000))
     ScrapedAt = db.Column(DateTime, nullable=False)
     Color = db.Column(db.String(100))
     Availability = db.Column(db.String(100))
@@ -50,7 +51,7 @@ class ProductDetail(db.Model):
 
     def __init__(self,description,price,scraped_at,color,
                  availability,avg_rating,
-                 review_count,product_url,sale,product_id): 
+                 review_count,product_url,sale,product_id,mock_prices): 
         self.Description = description
         self.Price = price
         self.ScrapedAt = scraped_at
@@ -61,6 +62,7 @@ class ProductDetail(db.Model):
         self.ProductUrl = product_url
         self.Sale = sale
         self.ProductId = product_id
+        self.MockPrice = mock_prices
 
 class ImageLink(db.Model):
     __tablename__ = 'image_link'
