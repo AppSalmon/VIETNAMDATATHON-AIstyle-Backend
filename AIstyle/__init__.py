@@ -40,10 +40,12 @@ def create_app(remove = False):
 
     from AIstyle.user import user
     from AIstyle.home import home
+    from AIstyle.routes import routes
 
 
     app.register_blueprint(user)
     app.register_blueprint(home)
+    app.register_blueprint(routes)
 
 
     return app
@@ -51,3 +53,4 @@ def create_app(remove = False):
 from AIstyle.models import *
 from AIstyle.home import *
 from AIstyle.user import *
+from AIstyle.routes import *
