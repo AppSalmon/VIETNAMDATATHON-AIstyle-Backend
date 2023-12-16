@@ -35,16 +35,21 @@ def recommend():
     list_product = []
     for i in range(len(productId)):
         detail = ProductDetail.query.filter_by(ProductId = productId[i]).all()
-        
+        detail_id = list(map(lambda x: x.id, detail))
         list_sale_price = list(map(lambda x: x.Price,detail))
         at = list(map(lambda x: x.ScrapedAt,detail))
         index = min(range(len(at)), key=lambda i: abs(datetime.now() - at[i]))
         price = list_sale_price[index]
+        list_image = []
+        for j in range(len(detail_id)):
+            images = list(map(lambda x: x.Image, ImageLink.query.filter_by(ProductDetailId=detail_id[j])))
+            list_image.append(images)
         list_product.append({'id':i,
                              'name':name[i],
                              'original_price':original_price[i],
                              "price":price,
-                             'sale': (1 - price/original_price[i])* 100})
+                             'sale': (1 - price/original_price[i])* 100,
+                             'list_image': list_image})
     get_trending = {'Product': list_product}
     list_product_sort = sorted(get_trending['Product'], key=lambda x: x['sale'], reverse=True)
     for i in range(len(list_product_sort)):
@@ -63,16 +68,28 @@ def trending():
     list_product = []
     for i in range(len(product_id)):
         detail = ProductDetail.query.filter_by(ProductId = product_id[i]).all()
+        detail_id = list(map(lambda x: x.id, detail))
         rating = list(map(lambda x: x.AvgRating,detail))
+        reviewCount = list(map(lambda x: x.ReviewCount,detail))
+        list_sale_price = list(map(lambda x: x.Price,detail))
         at = list(map(lambda x: x.ScrapedAt,detail))
         index = min(range(len(at)), key=lambda i: abs(datetime.now() - at[i]))
         rating = rating[index]
+        reviewCount = reviewCount[index]
+        price = list_sale_price[index]
+        list_image = []
+        for j in range(len(detail_id)):
+            images = list(map(lambda x: x.Image, ImageLink.query.filter_by(ProductDetailId=detail_id[j])))
+            list_image.append(images)
         list_product.append({'id': i,
                              'name': name[i],
-                             'rating': rating})
+                             'rating': rating,
+                             'review_count': reviewCount,
+                             'price': price,
+                             'list_image': list_image})
     
     get_trending = {'Product': list_product}
-    list_product_sort = sorted(get_trending['Product'], key=lambda x: x['rating'], reverse=True)
+    list_product_sort = sorted(get_trending['Product'], key=lambda x: (x['rating'], x['review_count']), reverse=True)
     for i in range(len(list_product_sort)):
         list_product_sort[i]['key'] = i
     get_trending = {'Product': list_product_sort}
