@@ -35,7 +35,7 @@ app = create_app(remove=True)
 
 ''' Import data '''
 import pandas as pd
-df_crawl = pd.read_csv("VIETNAMDATATHON-AIstyle-Backend\Process_data\data_crawl.csv")
+df_crawl = pd.read_csv("VIETNAMDATATHON-AIstyle-Backend\Process_data\data.csv")
 df_btc = pd.read_csv("VIETNAMDATATHON-AIstyle-Backend\Process_data\data_btc.csv")
 
 
@@ -50,51 +50,88 @@ with app.app_context():
 
 '''Add data PRoduct to database'''
 productId = 0
+
 for index, row in df_crawl.iterrows():
     productId = index + 1
-    new_product = Product(
-        name= row['name'],
-        original_price= row['original_price'],
-        scraped_at= row['scraped_at'],
-        brand_id= 2
-    )
-    
-    with app.app_context():
-        db.session.add(new_product)
-        db.session.commit()
-    
-    product_detail = ProductDetail(
-        description= row['description'],
-        avg_rating= row['avg_rating'],
-        price= row['price'],
-        scraped_at= row['scraped_at'],
-        color= row['color'],
-        availability= row['availability'],
-        review_count= row['review_count'],
-        product_url= row['url'],
-        sale= 0,
-        product_id= productId
-    )
+    if row['brand'] != 'adidas':
+        new_product = Product(
+            name= row['name'],
+            original_price= row['original_price'],
+            scraped_at= row['scraped_at'],
+            brand_id= 1
+        )
+        with app.app_context():
+            db.session.add(new_product)
+            db.session.commit()
 
-    with app.app_context():
-        db.session.add(product_detail)
-        db.session.commit()
+        price_mock = row['mock_prices'][:-1] + ',' + str(row['price']) + ']'
+        product_detail = ProductDetail(
+            description= row['description'],
+            avg_rating= row['avg_rating'],
+            price= price_mock,
+            scraped_at= row['scraped_at'],
+            color= row['color'],
+            availability= row['availability'],
+            review_count= row['review_count'],
+            product_url= row['url'],
+            sale= 0,
+            product_id= productId 
+        )
+        with app.app_context():
+            db.session.add(product_detail)
+            db.session.commit()
 
-
-    links = re.findall(r'https://\S+\.jpg', row['images'])
-    for link in links:
+        link = row['images'][4:-3]
         image = ImageLink(
             image= link,
-            product_detail_id= productId
+            product_detail_id= productId 
         )
         with app.app_context():
             db.session.add(image)
             db.session.commit()
+    else:
+        new_product = Product(
+            name= row['name'],
+            original_price= row['original_price'],
+            scraped_at= row['scraped_at'],
+            brand_id= 2
+        )
+        with app.app_context():
+            db.session.add(new_product)
+            db.session.commit()
 
+        price_mock = row['mock_prices'][:-1] + ',' + str(row['price']) + ']'
+        product_detail = ProductDetail(
+            description= row['description'],
+            avg_rating= row['avg_rating'],
+            price= price_mock,
+            scraped_at= row['scraped_at'],
+            color= row['color'],
+            availability= row['availability'],
+            review_count= row['review_count'],
+            product_url= row['url'],
+            sale= 0,
+            product_id= productId 
+        )
+        with app.app_context():
+            db.session.add(product_detail)
+            db.session.commit()
+
+        links = re.findall(r'https://\S+\.jpg', row['images'])
+        for link in links:
+            image = ImageLink(
+                image= link,
+                product_detail_id= productId 
+            )
+            with app.app_context():
+                db.session.add(image)
+                db.session.commit()
+    
+
+    # numbers = re.findall(r"[-+]?\d*\.\d+|\d+", row['mock_prices'])
+    
 print(productId)
 productId2 = 0
-
-
 
 for index, row in df_btc.iterrows():
     productId2 = productId + index + 1
@@ -119,7 +156,6 @@ for index, row in df_btc.iterrows():
         db.session.commit()
     
 
-    
     product_detail = ProductDetail(
         description= row['description'],
         avg_rating= row['avg_rating'],
@@ -136,7 +172,6 @@ for index, row in df_btc.iterrows():
     with app.app_context():
         db.session.add(product_detail)
         db.session.commit()
-
 
     links = row['images'].split("~")
     for i in range(len(links)):

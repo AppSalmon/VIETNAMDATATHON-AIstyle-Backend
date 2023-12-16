@@ -7,7 +7,7 @@ from flask import jsonify
 from flask_cors import cross_origin
 from datetime import datetime
 import threading
-
+import re
 
 routes = Blueprint("routes", __name__)
 #Trả về danh sách giá để vẽ biểu đồ giá
@@ -15,6 +15,11 @@ routes = Blueprint("routes", __name__)
 @cross_origin()
 def get_price(product_id: int):
     list_sale_price =  list(map(lambda x: x.Price ,ProductDetail.query.filter_by(ProductId = product_id).all()))
+    list_sale_price = list_sale_price[0].split(",")
+    list_sale_price[0] = (list_sale_price[0][2:])
+    list_sale_price[-1] = (list_sale_price[-1][:-2])
+    for i in range(len(list_sale_price)):
+        list_sale_price[i] = round(float(list_sale_price[i]),2)
     product =  Product.query.filter_by(id = product_id).first()
     name = product.Name
     original_price = product.OriginalPrice
