@@ -10,7 +10,7 @@ import re
 
 
 # from AIstyle import *
-from AIstyle.models import (
+from app.models import (
     Brand,
     Product,
     ProductDetail,
@@ -21,10 +21,10 @@ from AIstyle.models import (
     ResultBox,
     ImageLink
 )
-from AIstyle import db, create_app
+from app import db, create_app
 
 
-load_dotenv(dotenv_path = "./AIstyle/.env")
+load_dotenv(dotenv_path = "./app/.env")
 
 SECRET_KEY = os.environ.get("SECRET_KEY")
 DB_NAME = os.environ.get("DB_NAME")
@@ -64,7 +64,7 @@ for index, row in df_crawl.iterrows():
             db.session.add(new_product)
             db.session.commit()
 
-        price_mock = row['mock_prices'][:-1] + ',' + str(row['price']) + ']'
+        price_mock = row['mock_prices'][:-1] + '~' + str(row['price']) 
         product_detail = ProductDetail(
             description= row['description'],
             avg_rating= row['avg_rating'],
@@ -81,7 +81,7 @@ for index, row in df_crawl.iterrows():
             db.session.add(product_detail)
             db.session.commit()
 
-        link = row['images'][4:-3]
+        link = row['images'][2:-2]
         image = ImageLink(
             image= link,
             product_detail_id= productId 
@@ -100,7 +100,7 @@ for index, row in df_crawl.iterrows():
             db.session.add(new_product)
             db.session.commit()
 
-        price_mock = row['mock_prices'][:-1] + ',' + str(row['price']) + ']'
+        price_mock = row['mock_prices'][:-1] + '~' + str(row['price']) 
         product_detail = ProductDetail(
             description= row['description'],
             avg_rating= row['avg_rating'],
@@ -128,8 +128,7 @@ for index, row in df_crawl.iterrows():
                 db.session.commit()
     
 
-    # numbers = re.findall(r"[-+]?\d*\.\d+|\d+", row['mock_prices'])
-    
+        
 print(productId)
 productId2 = 0
 
