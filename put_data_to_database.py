@@ -36,7 +36,8 @@ app = create_app(remove=True)
 ''' Import data '''
 import pandas as pd
 df_crawl = pd.read_csv("VIETNAMDATATHON-AIstyle-Backend\Process_data\data.csv")
-df_btc = pd.read_csv("VIETNAMDATATHON-AIstyle-Backend\Process_data\data_btc.csv")
+# df_btc = pd.read_csv("VIETNAMDATATHON-AIstyle-Backend\Process_data\data_btc.csv")
+df = pd.read_csv("VIETNAMDATATHON-AIstyle-Backend\Process_data\data_2.csv")
 
 
 ''' Add data brand to database '''
@@ -50,14 +51,14 @@ with app.app_context():
 
 '''Add data PRoduct to database'''
 productId = 0
-
-for index, row in df_crawl.iterrows():
+for index, row in df.iterrows():
     productId = index + 1
     if row['brand'] != 'adidas':
         new_product = Product(
             name= row['name'],
             original_price= row['original_price'],
             scraped_at= row['scraped_at'],
+            key_image = row['key_image'],
             brand_id= 1
         )
         with app.app_context():
@@ -92,6 +93,7 @@ for index, row in df_crawl.iterrows():
             name= row['name'],
             original_price= row['original_price'],
             scraped_at= row['scraped_at'],
+            key_image = row['key_image'],
             brand_id= 2
         )
         with app.app_context():
@@ -124,11 +126,84 @@ for index, row in df_crawl.iterrows():
             with app.app_context():
                 db.session.add(image)
                 db.session.commit()
+productId2 = 0
+for index, row in df_crawl.iterrows():
+    productId2 = productId + index + 1
+    if row['brand'] != 'adidas':
+        new_product = Product(
+            name= row['name'],
+            original_price= row['original_price'],
+            scraped_at= row['scraped_at'],
+            key_image = None,
+            brand_id= 1
+        )
+        with app.app_context():
+            db.session.add(new_product)
+            db.session.commit()
+        product_detail = ProductDetail(
+            description= row['description'],
+            avg_rating= row['avg_rating'],
+            price= row['price'],
+            mock_prices= row['mock_prices'],
+            scraped_at= row['scraped_at'],
+            color= row['color'],
+            availability= row['availability'],
+            review_count= row['review_count'],
+            product_url= row['url'],
+            sale= 0,
+            product_id= productId2
+        )
+        with app.app_context():
+            db.session.add(product_detail)
+            db.session.commit()
+        link = row['images'][2:-2]
+        image = ImageLink(
+            image= link,
+            product_detail_id= productId 
+        )
+        with app.app_context():
+            db.session.add(image)
+            db.session.commit()
+    else:
+        new_product = Product(
+            name= row['name'],
+            original_price= row['original_price'],
+            scraped_at= row['scraped_at'],
+            key_image = None,
+            brand_id= 2
+        )
+        with app.app_context():
+            db.session.add(new_product)
+            db.session.commit()
+
+        product_detail = ProductDetail(
+            description= row['description'],
+            avg_rating= row['avg_rating'],
+            price= row['price'],
+            mock_prices= row['mock_prices'],
+            scraped_at= row['scraped_at'],
+            color= row['color'],
+            availability= row['availability'],
+            review_count= row['review_count'],
+            product_url= row['url'],
+            sale= 0,
+            product_id= productId2 
+        )
+        with app.app_context():
+            db.session.add(product_detail)
+            db.session.commit()
+
+        links = re.findall(r'https://\S+\.jpg', row['images'])
+        for link in links:
+            image = ImageLink(
+                image= link,
+                product_detail_id= productId 
+            )
+            with app.app_context():
+                db.session.add(image)
+                db.session.commit()
 
 
-
-        
-print(productId)
 # productId2 = 0
 
 # for index, row in df_btc.iterrows():

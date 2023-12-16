@@ -25,13 +25,14 @@ class Product(db.Model):
     ProductDetail = relationship('ProductDetail', backref='Product',lazy=True)
     Order = relationship('Order',backref='Product', lazy=True)
     ResultBox = relationship('ResultBox', backref='Product', lazy=True)
+    KeyImage = db.Column(db.String(1000))
 
-    def __init__(self,name,original_price,scraped_at,brand_id):
+    def __init__(self,name,original_price,scraped_at,brand_id,key_image):
         self.Name = name
         self.OriginalPrice = original_price
         self.ScrapedAt = scraped_at
         self.BrandId = brand_id
-
+        self.KeyImage = key_image
 
 class ProductDetail(db.Model):
     __tablename__ = 'product_detail'
