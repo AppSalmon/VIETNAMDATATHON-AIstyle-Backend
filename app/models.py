@@ -20,12 +20,13 @@ class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True,autoincrement=True)
     Name = db.Column(db.String(200),nullable=False)
     OriginalPrice = db.Column(db.Float,nullable=False)
-    ScrapedAt = db.Column(DateTime,nullable=False)
+    ScrapedAt = db.Column(db.String(1000),nullable=False)
+    KeyImage = db.Column(db.String(1000))
     BrandId = db.Column(db.Integer,ForeignKey(Brand.id), nullable=False)
     ProductDetail = relationship('ProductDetail', backref='Product',lazy=True)
     Order = relationship('Order',backref='Product', lazy=True)
     ResultBox = relationship('ResultBox', backref='Product', lazy=True)
-    KeyImage = db.Column(db.String(1000))
+    
 
     def __init__(self,name,original_price,scraped_at,brand_id,key_image):
         self.Name = name
@@ -40,7 +41,8 @@ class ProductDetail(db.Model):
     Description = db.Column(db.String(2000),nullable=False)
     Price = db.Column(db.Float,nullable=False)
     MockPrice = db.Column(db.String(1000))
-    ScrapedAt = db.Column(DateTime, nullable=False)
+    ScrapedAt = db.Column(db.String(100), nullable=False)
+    # ScrapedAt = db.Column(DateTime, nullable=False)
     Color = db.Column(db.String(100))
     Availability = db.Column(db.String(100))
     AvgRating = db.Column(db.Float)
